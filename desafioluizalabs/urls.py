@@ -6,5 +6,5 @@ from fbusers import views
 urlpatterns = patterns('',
     # Examples:
     url(r'^person/$', csrf_exempt(views.FbUserList.as_view()), name='person'),
-    url(r'^person/(?P<facebookId>\w+)$', csrf_exempt(views.FbUserDelete.as_view()), name='person_delete'),
+    url(r'^person/(?P<facebookId>\w+)/$', csrf_exempt(views.FbUserDelete.as_view()), name='person_delete'),
 )
