@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from fbusers.models import FbUserLog
 
+
 class CreationTest(TestCase):
     def test_list(self):
         response = self.client.get(reverse('person'))
@@ -29,4 +30,3 @@ class CreationTest(TestCase):
         self.assertEqual(response.status_code, 201)
         response = self.client.delete(reverse('person_delete', kwargs={'facebookId':'1439785724'}))
         self.assertEqual(response.status_code, 204)
-

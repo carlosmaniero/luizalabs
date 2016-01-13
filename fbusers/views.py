@@ -7,6 +7,7 @@ from rest_framework import mixins
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from facebook import GraphAPIError
 
 
 class FbUserList(mixins.ListModelMixin,
@@ -30,16 +31,19 @@ class FbUserList(mixins.ListModelMixin,
         if facebookId is None or facebookId is '':
             return Response({'error': 'facebookId field is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        request = get_fb_user(facebookId)
+        try:
+            user = get_fb_user(facebookId)
+        except GraphAPIError:
+            user = {}
 
         log = FbUserLog()
         log.facebookId = facebookId
 
-        if request.status_code == 200:
-            json = request.json()
-            json['name'] = json['first_name'] + ' ' + json['last_name']
-            json['facebookId'] = json['id']
-            serializer = FbUserSerializer(data=json)
+        if user:
+            user['name'] = user['first_name'] + ' ' + user['last_name']
+            user['facebookId'] = user['id']
+            user['username'] = user['id']
+            serializer = FbUserSerializer(data=user)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -50,13 +54,9 @@ class FbUserList(mixins.ListModelMixin,
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
         log.action = 'error'
-        log.error_code = request.status_code
         log.save()
 
-        if request.status_code == 404:
-            return Response({'error': 'Invalid facebookId'}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({'error': request.text}, status=request.status_code)
+        return Response({'error': request.text}, status=403)
 
 class FbUserDelete(generics.GenericAPIView):
     def delete(self, request, *args, **kwargs):

@@ -1,8 +1,9 @@
 # coding: utf-8
 from __future__ import unicode_literals
-import requests
+import facebook
+from django.conf import settings
 
 
 def get_fb_user(id):
-    url = 'https://graph.facebook.com/{id}'.format(id=id)
-    return requests.get(url)
+    graph = facebook.GraphAPI(access_token=settings.ACCESS_TOKEN)
+    return graph.get_object(id)
